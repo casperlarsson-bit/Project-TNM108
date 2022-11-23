@@ -1,6 +1,6 @@
-## TNM108 Project - Bot for Twitter in Machine Learning for social media
+# TNM108 Project - Bot for Twitter in Machine Learning for social media
 
-#### Setup instructions
+## Setup instructions
 If VSCode cannot read imported modules:
 1. Navigate to the Project folder in VSCode
 2. Execute following code in PowerShell:
