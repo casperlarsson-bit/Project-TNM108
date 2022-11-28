@@ -1,112 +1,122 @@
+print(chr(27) + "[2J")
+
 import pandas as pd
 import nltk
 import numpy as np
 import re
-from nltk.stem import wordnet #to perform lemmitization
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from nltk import  pos_tag #for parts of speech
-from sklearn.metrics import pairwise_distances # to perform cosine similarity
-from nltk import word_tokenize #to create tokens
-from nltk.corpus import stopwords #for stop words
+from nltk.stem import wordnet # to perform Lemmitization
+from sklearn.feature_extraction.text import CountVectorizer # to perform bow
+from sklearn.feature_extraction.text import TfidfVectorizer # to perform tfidf
+from nltk import pos_tag # for parts of speech
+from sklearn.metrics import pairwise_distances # to perfrom cosine similarity
+from nltk import word_tokenize # to create tokens
+from nltk.corpus import stopwords # for stop words
 
-from algorithms import *
-from textProcessing import *  
-from menuOptions import *       
+df = pd.read_excel('dataset.xlsx', engine='openpyxl')
+#print(df.head())
 
-def train_bot():
-    while True:
-      print('\n(A) TFIDF: ' + dataFile['Answers'].loc[chat_tfidf(Question,dataFile['lemmatized_text'])])
+df.ffill(axis=0, inplace=True) # Replace NaN answwers with the one above
+#print(df.head(5))
 
-      print('(B) BOW: ' + dataFile['Answers'].loc[bagOfWords(Question,dataFile['lemmatized_text'])])
+df1 = df.head(10) # Copy first 10 elements of dataset
 
-      if Question =="Bye" or Question =="bye" or Question =="goodbye" or Question =="Goodbye":
-        print('Goodbye')
-        break
-      else: 
-         best_algo= input('\nBest algorithm? A / B / Equal\n Answer:')  
-         if best_algo =='A' or best_algo =='a': 
-            print('You chose ' + algo[0])
-            
-         elif best_algo =='B' or best_algo =='b': 
-            print('You chose ' + algo[1])
-            
-         elif best_algo =='Equal' or best_algo =='equal': 
-            print('The algorithms were equal')  
-            
-          #elif not best_algo=='A' or best_algo =='a' or best_algo =='B' or best_algo =='b' or best_algo =='Equal' or best_algo =='equal': 
-         else:
-            rate_algo(best_algo)
+# Remove special characters and make to lower
+def step1(x):
+    for i in x:
+        a = str(i).lower()
+        p = re.sub(r'[^a-z0-9]',' ', a)
+        #print(p)
 
-def rate_algo(best_algo):
+step1(df1['Questions'])
 
-    while True:
-     try:
-       if not best_algo=='A' or best_algo =='a':
-          best_algo= input('Please select one option. \n Answer:') 
-     except:
-        continue   
 
-### Loop the data lines
-# with open("dialogs.txt", 'r') as dataFile:
-#     # get No of columns in each line
-#     col_count = [ len(line.split("\t")) for line in dataFile.readlines() ]
+#Word Tokenizing, Create a vector that separates each word in a sentence
 
-### Generate column names  (names will be 0, 1, 2, ..., maximum columns - 1)
-# column_names = ['Questions', 'Answers']
+s='tell me aobut your personality'
 
-### Read csv
-# dataFile = pd.read_csv("dialogs.txt", header=None, delimiter="\t", names=column_names) 
+words = word_tokenize(s)
+#print(words)
 
-dataFile = pd.read_excel("Q_and_A.xlsx") 
+pos_tag(word_tokenize(s), tagset = None) # returns the parts of speech of every word
 
-dataFile.ffill(axis=0, inplace = True)
 
-### Applying to dataset
-dataFile['lemmatized_text'] = dataFile['Questions'].apply(text_normalizer)
 
-menu = {}
-menu['1']="Talk to the bot" 
-menu['2']="Validate the bot"
-menu['3']="Exit"
+lemma = wordnet.WordNetLemmatizer()
+lemma.lemmatize('absorbed', pos = 'v')
 
-algo = ['TFIDF','BOW']
+def text_normalization(text):
+    text=str(text).lower() # text to lower case
+    spl_char_text=re.sub(r'[^ a-z]','',text) # removing special characters
+    tokens=nltk.word_tokenize(spl_char_text) # word tokenizing
+    lema=wordnet.WordNetLemmatizer() # intializing lemmatization
+    tags_list=pos_tag(tokens,tagset=None) # parts of speech
+    lema_words=[]   # empty list 
+    for token,pos_token in tags_list:
+        if pos_token.startswith('V'):  # Verb
+            pos_val='v'
+        elif pos_token.startswith('J'): # Adjective
+            pos_val='a'
+        elif pos_token.startswith('R'): # Adverb
+            pos_val='r'
+        else:
+            pos_val='n' # Noun
+        lema_token=lema.lemmatize(token,pos_val) # performing lemmatization
+        lema_words.append(lema_token) # appending the lemmatized token into a list
+    
+    return " ".join(lema_words) # returns the lemmatized tokens as a sentence 
 
-while True: 
-    print('\n--------------------- ')
-    options=menu.keys()
-    sorted(options)
-    for entry in options: 
-        print (entry, menu[entry])
-    selection = input("Please select: ") 
-    print('--------------------- ')
-  
-    if selection =='1': 
-      print ('\nLets chat!') 
-      Question = input('Start talking: ')
+#print(text_normalization('telling you some stuff about me'))
 
-      print('TFIDF: ' + dataFile['Answers'].loc[chat_tfidf(Question,dataFile['lemmatized_text'])])
+df['lemmatized_text']=df['Questions'].apply(text_normalization) # applying the fuction to the dataset to get clean text
+df.tail(15)
 
-      print('BOW: ' + dataFile['Answers'].loc[bagOfWords(Question,dataFile['lemmatized_text'])])
-      
-      if Question =="Bye" or Question =="bye" or Question =="goodbye" or Question =="Goodbye":
-          print('Goodbye')
-          break  
+# all the stop words we have 
+stop = stopwords.words('english')
 
-    elif selection == '2': 
-     print ('\nLets train the set!')
-     Question = input('Start talking: ') 
-     train_bot()
-    elif selection == '': 
-      break
-    elif selection == '3':
-      break
-    else: 
-      print ('Unknown Option Selected')
+cv = CountVectorizer() # intializing the count vectorizer
+X = cv.fit_transform(df['lemmatized_text']).toarray()
 
-    Question = input()
+# returns all the unique word from data 
 
-    print('TFIDF: ' + dataFile['Answers'].loc[chat_tfidf(Question,dataFile['lemmatized_text'])])
+features = cv.get_feature_names_out()
+df_bow = pd.DataFrame(X, columns = features)
+df_bow.head()
 
-    print('BOW: ' + dataFile['Answers'].loc[bagOfWords(Question,dataFile['lemmatized_text'])])
+Question = input() #'Will you help me and tell me about yourself more' # considering an example query
 
+# checking for stop words
+
+Q=[]
+a=Question.split()
+for i in a:
+    if i in stop:
+        continue
+    else:
+        Q.append(i)
+    b=" ".join(Q) 
+
+
+Question_lemma = text_normalization(b) # applying the function that we created for text normalizing
+Question_bow = cv.transform([Question_lemma]).toarray() # applying bow
+#print(Question_bow)
+
+# cosine similarity for the above question we considered.
+
+cosine_value = 1- pairwise_distances(df_bow, Question_bow, metric = 'cosine' )
+(cosine_value)
+
+df['similarity_bow']=cosine_value # creating a new column 
+
+df_simi = pd.DataFrame(df, columns=['Answers','similarity_bow']) # taking similarity value of responses for the question we took
+#print(df_simi) 
+
+df_simi_sort = df_simi.sort_values(by='similarity_bow', ascending=False) # sorting the values
+#print(df_simi_sort.head())
+
+threshold = 0.2 # considering the value of p=smiliarity to be greater than 0.2
+df_threshold = df_simi_sort[df_simi_sort['similarity_bow'] > threshold] 
+#print(df_threshold)
+
+index_value = cosine_value.argmax() # returns the index number of highest value
+print('\nQuestion: ', Question)
+print('\nAnswer: ', df['Answers'].loc[index_value]) # The text at the above index becomes the response for the question)

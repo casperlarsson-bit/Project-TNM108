@@ -11,3 +11,8 @@ Example:
 ```PowerShell
 python -m venv C:\Users\Asus\Desktop\Project\venv
 ```
+
+If that does not work, do following:
+1. Click F1
+2. Choose *Python: Select Interpreter*
+3. Choose the *Global* versioin
