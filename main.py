@@ -82,41 +82,42 @@ features = cv.get_feature_names_out()
 df_bow = pd.DataFrame(X, columns = features)
 df_bow.head()
 
-Question = input() #'Will you help me and tell me about yourself more' # considering an example query
+while True:
+    Question = input() #'Will you help me and tell me about yourself more' # considering an example query
 
-# checking for stop words
+    # checking for stop words
 
-Q=[]
-a=Question.split()
-for i in a:
-    if i in stop:
-        continue
-    else:
-        Q.append(i)
-    b=" ".join(Q) 
+    Q=[]
+    a=Question.split()
+    for i in a:
+        if i in stop:
+            continue
+        else:
+            Q.append(i)
+        b=" ".join(Q) 
 
 
-Question_lemma = text_normalization(b) # applying the function that we created for text normalizing
-Question_bow = cv.transform([Question_lemma]).toarray() # applying bow
-#print(Question_bow)
+    Question_lemma = text_normalization(b) # applying the function that we created for text normalizing
+    Question_bow = cv.transform([Question_lemma]).toarray() # applying bow
+    #print(Question_bow)
 
-# cosine similarity for the above question we considered.
+    # cosine similarity for the above question we considered.
 
-cosine_value = 1- pairwise_distances(df_bow, Question_bow, metric = 'cosine' )
-(cosine_value)
+    cosine_value = 1- pairwise_distances(df_bow, Question_bow, metric = 'cosine' )
+    (cosine_value)
 
-df['similarity_bow']=cosine_value # creating a new column 
+    df['similarity_bow']=cosine_value # creating a new column 
 
-df_simi = pd.DataFrame(df, columns=['Answers','similarity_bow']) # taking similarity value of responses for the question we took
-#print(df_simi) 
+    df_simi = pd.DataFrame(df, columns=['Answers','similarity_bow']) # taking similarity value of responses for the question we took
+    #print(df_simi) 
 
-df_simi_sort = df_simi.sort_values(by='similarity_bow', ascending=False) # sorting the values
-#print(df_simi_sort.head())
+    df_simi_sort = df_simi.sort_values(by='similarity_bow', ascending=False) # sorting the values
+    #print(df_simi_sort.head())
 
-threshold = 0.2 # considering the value of p=smiliarity to be greater than 0.2
-df_threshold = df_simi_sort[df_simi_sort['similarity_bow'] > threshold] 
-#print(df_threshold)
+    threshold = 0.2 # considering the value of p=smiliarity to be greater than 0.2
+    df_threshold = df_simi_sort[df_simi_sort['similarity_bow'] > threshold] 
+    #print(df_threshold)
 
-index_value = cosine_value.argmax() # returns the index number of highest value
-print('\nQuestion: ', Question)
-print('\nAnswer: ', df['Answers'].loc[index_value]) # The text at the above index becomes the response for the question)
+    index_value = cosine_value.argmax() # returns the index number of highest value
+    print('\nQuestion: ', Question)
+    print('\nAnswer: ', df['Answers'].loc[index_value]) # The text at the above index becomes the response for the question)
