@@ -1,4 +1,4 @@
-# TNM108 Project - Bot for Twitter in Machine Learning for social media
+# TNM108 Project - Chat bot in Machine Learning for social media
 
 ## Setup instructions
 If VSCode cannot read imported modules:
