@@ -1,4 +1,5 @@
 # TNM108 Project - Chat bot in Machine Learning for social media
+A simple chatbot which can answer basic questions. There are two versions, one using *Bag Of Words* and one using *TF-IDF*. To run the desired version, use that file (*bagofwords.py* or *tfidf.py*).
 
 ## Setup instructions
 If VSCode cannot read imported modules:
