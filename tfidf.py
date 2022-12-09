@@ -34,6 +34,8 @@ X = cv.fit_transform(df['lemmatized_text']).toarray()
 features = cv.get_feature_names_out()
 df_bow = pd.DataFrame(X, columns = features)
 
+print('Welcome to Chatbot, type your question\n')
+
 continueQuestions = True
 while continueQuestions:
     Question = input() 
